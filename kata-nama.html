@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kata Nama — สื่อการเรียนรู้ภาษามลายู</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Thai:wght@500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --cream:#FAF1DE;
+    --paper:#FFFBF2;
+    --ink:#26312B;
+    --teal:#0E5C55;
+    --teal-deep:#0A3F3A;
+    --teal-tint:#E4F0EE;
+    --gold:#C7962E;
+    --gold-soft:#E9CE8E;
+    --maroon:#8C3145;
+    --maroon-soft:#F3DEE2;
+    --green:#2E7D5B;
+    --green-soft:#DCEEE3;
+    --red:#B4453F;
+    --red-soft:#F6E0DD;
+    --shadow: 0 18px 40px -18px rgba(10,40,36,.45);
+    --radius: 18px;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0;
+    font-family:'Noto Sans Thai','Noto Sans',sans-serif;
+    background:
+      radial-gradient(circle at 15% 10%, #14655D 0%, transparent 45%),
+      radial-gradient(circle at 90% 85%, #0A3F3A 0%, transparent 50%),
+      var(--teal-deep);
+    color:var(--ink);
+    overflow:hidden;
+  }
+  h1,h2,h3,.display{
+    font-family:'Noto Serif Thai','Noto Serif',serif;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+
+  /* ---------- App shell ---------- */
+  .app{
+    position:relative;
+    width:100%;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:22px;
+  }
+  .book{
+    position:relative;
+    width:min(980px, 100%);
+    height:min(700px, 92vh);
+    background:var(--paper);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+    border:1px solid rgba(199,150,46,.35);
+  }
+  .pages{
+    position:relative;
+    width:100%;
+    height:100%;
+  }
+  .page{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    opacity:0;
+    transform:translateX(40px);
+    pointer-events:none;
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .page.active{
+    opacity:1;
+    transform:translateX(0);
+    pointer-events:auto;
+  }
+  .page.leaving{
+    transform:translateX(-40px);
+  }
+
+  /* ---------- Songket motif band ---------- */
+  .motif-band{ width:100%; height:16px; flex:none; display:block; }
+  .motif-band.top{ background:var(--teal); }
+  .motif-band.bottom{ background:var(--teal); }
+  .page-body{
+    flex:1;
+    min-height:0;
+    overflow-y:auto;
+    padding:34px 46px 30px;
+  }
+  .page-body::-webkit-scrollbar{ width:8px; }
+  .page-body::-webkit-scrollbar-thumb{ background:var(--gold-soft); border-radius:8px; }
+
+  /* ---------- Cover ---------- */
+  .cover{
+    background:
+      linear-gradient(180deg, rgba(14,92,85,.06), transparent 30%),
+      var(--paper);
+  }
+  .cover .page-body{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    gap:10px;
+    position:relative;
+  }
+  .cover-frame{
+    border:2px solid var(--gold);
+    border-radius:14px;
+    padding:44px 40px;
+    position:relative;
+    width:min(560px,88%);
+  }
+  .cover-frame::before, .cover-frame::after{
+    content:"";
+    position:absolute;
+    width:34px; height:34px;
+    border:2px solid var(--gold);
+  }
+  .cover-eyebrow{
+    letter-spacing:.28em;
+    font-size:.72rem;
+    color:var(--teal);
+    font-weight:700;
+    text-transform:uppercase;
+  }
+  .cover h1{
+    font-size:clamp(2.4rem, 6vw, 3.4rem);
+    color:var(--teal-deep);
+    margin:10px 0 6px;
+  }
+  .cover .thai-title{
+    font-size:1.15rem;
+    color:var(--maroon);
+    font-weight:600;
+  }
+  .cover-sub{
+    margin-top:18px;
+    font-size:.95rem;
+    color:#5b6a63;
+    line-height:1.7;
+  }
+  .cover-tags{
+    margin-top:22px;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+  }
+  .tag{
+    font-size:.78rem;
+    padding:6px 14px;
+    border-radius:999px;
+    background:var(--teal-tint);
+    color:var(--teal-deep);
+    font-weight:600;
+  }
+
+  /* ---------- Generic header used across content pages ---------- */
+  .page-kicker{
+    display:flex;
+    align-items:baseline;
+    gap:12px;
+    margin-bottom:4px;
+  }
+  .page-kicker .num{
+    font-family:'Noto Serif Thai',serif;
+    font-weight:800;
+    font-size:2.1rem;
+    color:var(--gold);
+    line-height:1;
+  }
+  .page-kicker .titles h2{
+    margin:0;
+    font-size:1.55rem;
+    color:var(--teal-deep);
+  }
+  .page-kicker .titles .th{
+    color:var(--maroon);
+    font-weight:600;
+    font-size:.98rem;
+  }
+  hr.divider{
+    border:none;
+    height:2px;
+    background:repeating-linear-gradient(90deg, var(--gold) 0 8px, transparent 8px 14px);
+    margin:16px 0 20px;
+  }
+
+  /* ---------- TOC ---------- */
+  .toc-list{
+    list-style:none;
+    padding:0;
+    margin:0;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .toc-item{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:14px 12px;
+    border-radius:12px;
+    cursor:pointer;
+    transition:background .2s ease;
+    border-bottom:1px dashed #e4dcc4;
+  }
+  .toc-item:hover{ background:var(--teal-tint); }
+  .toc-item .toc-idx{
+    width:34px; height:34px;
+    border-radius:50%;
+    background:var(--teal);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;
+    font-size:.9rem;
+    flex:none;
+  }
+  .toc-item .toc-text .my{ font-weight:600; color:var(--teal-deep); }
+  .toc-item .toc-text .th{ font-size:.85rem; color:#7a8580; }
+  .toc-item .toc-page{
+    margin-left:auto;
+    font-family:'Noto Serif Thai',serif;
+    color:var(--gold);
+    font-weight:700;
+  }
+
+  /* ---------- Definition / content blocks ---------- */
+  .def-card{
+    background:var(--teal-tint);
+    border-left:4px solid var(--teal);
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:20px;
+    font-size:.98rem;
+    line-height:1.75;
+  }
+  .def-card b{ color:var(--teal-deep); }
+  .subhead{
+    font-weight:700;
+    color:var(--maroon);
+    font-size:.95rem;
+    margin:0 0 10px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .subhead::before{
+    content:"";
+    width:8px;height:8px;
+    background:var(--gold);
+    border-radius:50%;
+    display:inline-block;
+  }
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .chip{
+    background:var(--paper);
+    border:1.5px solid var(--gold-soft);
+    padding:8px 14px;
+    border-radius:10px;
+    font-size:.92rem;
+  }
+  .chip .my{ font-weight:700; color:var(--teal-deep); }
+  .chip .th{ color:#7a8580; font-size:.8rem; margin-left:4px; }
+
+  /* ---------- Activities ---------- */
+  .instructions{
+    background:var(--maroon-soft);
+    border-radius:10px;
+    padding:14px 16px;
+    font-size:.92rem;
+    margin-bottom:20px;
+    color:#5a2632;
+    line-height:1.65;
+  }
+  .word-bank{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:24px;
+  }
+  .word-card{
+    background:var(--paper);
+    border:1.5px solid #e4dcc4;
+    border-radius:12px;
+    padding:12px 16px;
+    min-width:150px;
+    box-shadow:0 4px 10px -6px rgba(0,0,0,.15);
+  }
+  .word-card .word{
+    font-weight:700;
+    color:var(--teal-deep);
+    font-size:1.02rem;
+    margin-bottom:8px;
+    display:block;
+  }
+  .opt-row{
+    display:flex;
+    gap:6px;
+    flex-wrap:wrap;
+  }
+  .opt-btn{
+    font-family:inherit;
+    font-size:.78rem;
+    padding:6px 10px;
+    border-radius:8px;
+    border:1.5px solid var(--teal);
+    background:#fff;
+    color:var(--teal-deep);
+    cursor:pointer;
+    transition:.15s ease;
+    font-weight:600;
+  }
+  .opt-btn:hover{ background:var(--teal-tint); }
+  .opt-btn.selected{ background:var(--teal); color:#fff; }
+  .word-card.correct{ border-color:var(--green); background:var(--green-soft); }
+  .word-card.incorrect{ border-color:var(--red); background:var(--red-soft); }
+  .word-card .fb{
+    margin-top:8px;
+    font-size:.78rem;
+    font-weight:700;
+  }
+  .word-card.correct .fb{ color:var(--green); }
+  .word-card.incorrect .fb{ color:var(--red); }
+
+  .sentence-card{
+    background:var(--paper);
+    border:1.5px solid #e4dcc4;
+    border-radius:12px;
+    padding:16px 18px;
+    margin-bottom:14px;
+  }
+  .sentence-my{ font-size:1rem; font-weight:600; color:var(--teal-deep); margin-bottom:2px; }
+  .sentence-th{ font-size:.85rem; color:#7a8580; margin-bottom:12px; }
+  .sentence-card .fb{ margin-top:10px; font-size:.8rem; font-weight:700; }
+  .sentence-card.correct{ border-color:var(--green); background:var(--green-soft); }
+  .sentence-card.incorrect{ border-color:var(--red); background:var(--red-soft); }
+  .sentence-card.correct .fb{ color:var(--green); }
+  .sentence-card.incorrect .fb{ color:var(--red); }
+
+  .activity-controls{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-top:8px;
+    flex-wrap:wrap;
+  }
+  .btn-primary{
+    font-family:inherit;
+    background:var(--teal);
+    color:#fff;
+    border:none;
+    padding:11px 22px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+    font-size:.9rem;
+    box-shadow:0 8px 18px -8px rgba(14,92,85,.6);
+  }
+  .btn-primary:hover{ background:var(--teal-deep); }
+  .btn-ghost{
+    font-family:inherit;
+    background:transparent;
+    color:var(--maroon);
+    border:1.5px solid var(--maroon);
+    padding:9px 18px;
+    border-radius:10px;
+    font-weight:700;
+    cursor:pointer;
+    font-size:.85rem;
+  }
+  .btn-ghost:hover{ background:var(--maroon-soft); }
+  .score-pill{
+    margin-left:auto;
+    font-weight:700;
+    color:var(--teal-deep);
+    background:var(--gold-soft);
+    padding:9px 16px;
+    border-radius:999px;
+    font-size:.85rem;
+  }
+
+  /* ---------- Bottom nav ---------- */
+  .navbar{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:0;
+  }
+  .controls{
+    position:absolute;
+    bottom:16px;
+    left:0; right:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+    z-index:5;
+  }
+  .nav-btn{
+    width:42px;height:42px;
+    border-radius:50%;
+    border:none;
+    background:var(--teal);
+    color:#fff;
+    font-size:1.1rem;
+    cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 8px 18px -8px rgba(0,0,0,.5);
+    transition:.15s ease;
+  }
+  .nav-btn:hover{ background:var(--teal-deep); transform:translateY(-1px); }
+  .nav-btn:disabled{ opacity:.35; cursor:not-allowed; transform:none; }
+  .dots{
+    display:flex;
+    gap:7px;
+    background:rgba(255,251,242,.9);
+    padding:8px 14px;
+    border-radius:999px;
+    box-shadow:0 6px 16px -8px rgba(0,0,0,.4);
+  }
+  .dot{
+    width:8px;height:8px;
+    border-radius:50%;
+    background:#d8cfa9;
+    cursor:pointer;
+    transition:.2s ease;
+  }
+  .dot.active{ background:var(--teal); width:22px; border-radius:6px; }
+
+  .page-tag{
+    position:absolute;
+    top:16px; right:20px;
+    font-size:.72rem;
+    color:#fff;
+    background:rgba(0,0,0,.18);
+    padding:5px 11px;
+    border-radius:999px;
+    z-index:4;
+    letter-spacing:.05em;
+  }
+  .top-toc-btn{
+    position:absolute;
+    top:16px; left:20px;
+    font-size:.72rem;
+    color:#fff;
+    background:rgba(0,0,0,.18);
+    padding:5px 13px;
+    border-radius:999px;
+    z-index:4;
+    border:none;
+    cursor:pointer;
+    font-family:inherit;
+    font-weight:600;
+    letter-spacing:.03em;
+  }
+  .top-toc-btn:hover{ background:rgba(0,0,0,.32); }
+
+  @media (max-width:640px){
+    .page-body{ padding:26px 20px 20px; }
+    .cover-frame{ padding:30px 20px; }
+    .word-bank{ gap:8px; }
+    .word-card{ min-width:130px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="book" id="book">
+    <button class="top-toc-btn" onclick="goTo(1)">☰ สารบัญ</button>
+    <span class="page-tag" id="pageTag">1 / 8</span>
+
+    <div class="pages" id="pages">
+
+      <!-- PAGE 0: COVER -->
+      <section class="page cover" data-title="Kata Nama">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="cover-frame">
+            <div class="cover-eyebrow">Modul Bahasa Melayu · โมดูลภาษามลายู</div>
+            <h1>KATA NAMA</h1>
+            <div class="thai-title">คำนาม</div>
+            <p class="cover-sub">
+              สื่อการเรียนรู้เพื่อทำความเข้าใจคำนามในภาษามลายู ทั้งคำนามเฉพาะ คำนามทั่วไป และคำสรรพนาม<br>
+              พร้อมกิจกรรมโต้ตอบให้ฝึกและตรวจคำตอบได้ทันที
+            </p>
+            <div class="cover-tags">
+              <span class="tag">Kata Nama Khas</span>
+              <span class="tag">Kata Nama Am</span>
+              <span class="tag">Kata Ganti Nama</span>
+            </div>
+          </div>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+      <!-- PAGE 1: TOC -->
+      <section class="page" data-title="Daftar Isi">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="page-kicker">
+            <span class="titles">
+              <h2>DAFTAR ISI</h2>
+              <div class="th">สารบัญ</div>
+            </span>
+          </div>
+          <hr class="divider">
+          <ul class="toc-list">
+            <li class="toc-item" onclick="goTo(2)">
+              <span class="toc-idx">1</span>
+              <span class="toc-text"><div class="my">Prakata &amp; Pengenalan</div><div class="th">คำนำและคำแนะนำการใช้สื่อ</div></span>
+              <span class="toc-page">01</span>
+            </li>
+            <li class="toc-item" onclick="goTo(3)">
+              <span class="toc-idx">2</span>
+              <span class="toc-text"><div class="my">Modul 1: Kata Nama Khas</div><div class="th">คำนามเฉพาะ</div></span>
+              <span class="toc-page">02</span>
+            </li>
+            <li class="toc-item" onclick="goTo(4)">
+              <span class="toc-idx">3</span>
+              <span class="toc-text"><div class="my">Modul 2: Kata Nama Am</div><div class="th">คำนามทั่วไป</div></span>
+              <span class="toc-page">03</span>
+            </li>
+            <li class="toc-item" onclick="goTo(5)">
+              <span class="toc-idx">4</span>
+              <span class="toc-text"><div class="my">Modul 3: Kata Ganti Nama</div><div class="th">คำสรรพนาม</div></span>
+              <span class="toc-page">04</span>
+            </li>
+            <li class="toc-item" onclick="goTo(6)">
+              <span class="toc-idx">5</span>
+              <span class="toc-text"><div class="my">Aktiviti &amp; Latihan</div><div class="th">กิจกรรมและแบบฝึกหัด</div></span>
+              <span class="toc-page">05</span>
+            </li>
+          </ul>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+      <!-- PAGE 2: PRAKATA -->
+      <section class="page" data-title="Prakata">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="page-kicker">
+            <span class="num">01</span>
+            <span class="titles">
+              <h2>Prakata &amp; Pengenalan</h2>
+              <div class="th">คำนำและคำแนะนำการใช้สื่อ</div>
+            </span>
+          </div>
+          <hr class="divider">
+          <div class="def-card">
+            Modul ini disediakan untuk membantu murid memahami konsep <b>Kata Nama</b> dalam Bahasa Melayu dengan lebih jelas. Modul ini merangkumi tiga jenis kata nama utama, iaitu Kata Nama Khas, Kata Nama Am, dan Kata Ganti Nama, disertakan dengan aktiviti interaktif untuk menguji kefahaman murid.
+            <br><br>
+            <span style="color:#5b6a63;">สื่อการเรียนรู้นี้จัดทำขึ้นเพื่อช่วยให้นักเรียนเข้าใจแนวคิดเรื่อง "คำนาม" ในภาษามลายูได้อย่างชัดเจนยิ่งขึ้น เนื้อหาครอบคลุมคำนามหลัก 3 ประเภท ได้แก่ คำนามเฉพาะ คำนามทั่วไป และคำสรรพนาม พร้อมกิจกรรมเชิงโต้ตอบเพื่อทดสอบความเข้าใจของนักเรียน</span>
+          </div>
+
+          <p class="subhead">Cara Penggunaan Modul · วิธีใช้สื่อการเรียนรู้</p>
+          <div class="chip-row" style="flex-direction:column; align-items:stretch;">
+            <div class="chip">1. <span class="my">Baca setiap modul dengan teliti.</span> <span class="th">— อ่านเนื้อหาแต่ละโมดูลอย่างตั้งใจ</span></div>
+            <div class="chip">2. <span class="my">Cuba aktiviti interaktif di halaman aktiviti.</span> <span class="th">— ลองทำกิจกรรมโต้ตอบในหน้ากิจกรรม</span></div>
+            <div class="chip">3. <span class="my">Tekan "Semak Jawapan" untuk menyemak jawapan anda.</span> <span class="th">— กดปุ่ม "ตรวจคำตอบ" เพื่อตรวจคำตอบของตนเอง</span></div>
+          </div>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+      <!-- PAGE 3: MODUL 1 -->
+      <section class="page" data-title="Modul 1">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="page-kicker">
+            <span class="num">02</span>
+            <span class="titles">
+              <h2>Modul 1 — Kata Nama Khas</h2>
+              <div class="th">คำนามเฉพาะ</div>
+            </span>
+          </div>
+          <hr class="divider">
+          <div class="def-card">
+            <b>Kata Nama Khas</b> ialah kata yang digunakan untuk menyebut nama tertentu bagi seseorang, tempat, atau benda. Perkataan ini <b>mesti bermula dengan huruf besar (Huruf Besar)</b>.
+            <br><br>
+            <span style="color:#5b6a63;">ใช้เรียกชื่อเฉพาะเจาะจงของบุคคล สถานที่ หรือสิ่งของ ต้องขึ้นต้นด้วยตัวพิมพ์ใหญ่เสมอ</span>
+          </div>
+
+          <p class="subhead">Manusia · บุคคล</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">Cikgu Ahmad</span></div>
+            <div class="chip"><span class="my">Siti</span></div>
+          </div>
+
+          <p class="subhead">Tempat · สถานที่</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">Bangkok</span></div>
+            <div class="chip"><span class="my">Malaysia</span></div>
+            <div class="chip"><span class="my">Sekolah Menengah Yala</span></div>
+          </div>
+
+          <p class="subhead">Benda / Haiwan · สิ่งของ / สัตว์</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">Proton Saga</span><span class="th">(ยี่ห้อรถ)</span></div>
+            <div class="chip"><span class="my">Sang Kanci</span><span class="th">(ชื่อสัตว์ในนิทาน)</span></div>
+          </div>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+      <!-- PAGE 4: MODUL 2 -->
+      <section class="page" data-title="Modul 2">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="page-kicker">
+            <span class="num">03</span>
+            <span class="titles">
+              <h2>Modul 2 — Kata Nama Am</h2>
+              <div class="th">คำนามทั่วไป</div>
+            </span>
+          </div>
+          <hr class="divider">
+          <div class="def-card">
+            <b>Kata Nama Am</b> digunakan untuk menyebut sesuatu secara umum, tidak khusus. Ditulis dengan <b>huruf kecil</b>, kecuali berada di awal ayat.
+            <br><br>
+            <span style="color:#5b6a63;">ใช้เรียกสิ่งต่างๆ โดยทั่วไป ไม่เจาะจง เขียนด้วยตัวพิมพ์เล็ก ยกเว้นอยู่ต้นประโยค</span>
+          </div>
+
+          <p class="subhead">Konkrit · จับต้องได้</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">rumah</span><span class="th">(บ้าน)</span></div>
+            <div class="chip"><span class="my">buku</span><span class="th">(หนังสือ)</span></div>
+            <div class="chip"><span class="my">kucing</span><span class="th">(แมว)</span></div>
+            <div class="chip"><span class="my">guru</span><span class="th">(ครู)</span></div>
+          </div>
+
+          <p class="subhead">Abstrak · จับต้องไม่ได้</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">kedamaian</span><span class="th">(ความสงบ)</span></div>
+            <div class="chip"><span class="my">kejayaan</span><span class="th">(ความสำเร็จ)</span></div>
+            <div class="chip"><span class="my">impian</span><span class="th">(ความฝัน)</span></div>
+          </div>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+      <!-- PAGE 5: MODUL 3 -->
+      <section class="page" data-title="Modul 3">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="page-kicker">
+            <span class="num">04</span>
+            <span class="titles">
+              <h2>Modul 3 — Kata Ganti Nama</h2>
+              <div class="th">คำสรรพนาม</div>
+            </span>
+          </div>
+          <hr class="divider">
+          <div class="def-card">
+            <b>Kata Ganti Nama</b> ialah kata yang digunakan untuk menggantikan kata nama. Ia terbahagi kepada beberapa jenis penting.
+            <br><br>
+            <span style="color:#5b6a63;">คำที่ใช้แทนคำนาม แบ่งเป็นประเภทสำคัญได้ดังนี้</span>
+          </div>
+
+          <p class="subhead">Diri Pertama · สรรพนามแทนผู้พูด</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">saya</span><span class="th">(ฉัน)</span></div>
+            <div class="chip"><span class="my">kami</span><span class="th">(พวกเรา – ไม่รวมผู้ฟัง)</span></div>
+            <div class="chip"><span class="my">kita</span><span class="th">(พวกเรา – รวมผู้ฟัง)</span></div>
+          </div>
+
+          <p class="subhead">Diri Kedua · สรรพนามแทนผู้ฟัง</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">awak / kamu</span><span class="th">(คุณ/เธอ)</span></div>
+            <div class="chip"><span class="my">anda</span><span class="th">(ท่าน – ทางการ)</span></div>
+          </div>
+
+          <p class="subhead">Diri Ketiga · สรรพนามแทนผู้ถูกกล่าวถึง</p>
+          <div class="chip-row">
+            <div class="chip"><span class="my">dia</span><span class="th">(เขา)</span></div>
+            <div class="chip"><span class="my">mereka</span><span class="th">(พวกเขา)</span></div>
+            <div class="chip"><span class="my">beliau</span><span class="th">(ท่าน – ผู้มีตำแหน่ง/ผู้ใหญ่)</span></div>
+          </div>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+      <!-- PAGE 6: AKTIVITI 1 -->
+      <section class="page" data-title="Aktiviti 1">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="page-kicker">
+            <span class="num">05a</span>
+            <span class="titles">
+              <h2>Aktiviti 1 — Pengelasan Kata</h2>
+              <div class="th">กิจกรรมจัดหมวดหมู่คำ</div>
+            </span>
+          </div>
+          <hr class="divider">
+          <div class="instructions">
+            เลือกประเภทที่ถูกต้องให้กับคำแต่ละคำ แล้วกด "ตรวจคำตอบ" — Pilih jenis Kata Nama yang betul bagi setiap perkataan, kemudian tekan "Semak Jawapan".
+          </div>
+
+          <div class="word-bank" id="act1-bank"></div>
+
+          <div class="activity-controls">
+            <button class="btn-primary" onclick="checkActivity1()">✓ Semak Jawapan · ตรวจคำตอบ</button>
+            <button class="btn-ghost" onclick="resetActivity1()">↺ Cuba Lagi · ลองใหม่</button>
+            <span class="score-pill" id="act1-score">0 / 6</span>
+          </div>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+      <!-- PAGE 7: AKTIVITI 2 -->
+      <section class="page" data-title="Aktiviti 2">
+        <div class="motif-band top"></div>
+        <div class="page-body">
+          <div class="page-kicker">
+            <span class="num">05b</span>
+            <span class="titles">
+              <h2>Aktiviti 2 — Isikan Tempat Kosong</h2>
+              <div class="th">กิจกรรมเติมคำในช่องว่าง</div>
+            </span>
+          </div>
+          <hr class="divider">
+          <div class="instructions">
+            เลือกคำสรรพนามที่ถูกต้องเติมลงในช่องว่าง แล้วกด "ตรวจคำตอบ" — Pilih kata ganti nama yang betul untuk mengisi tempat kosong, kemudian tekan "Semak Jawapan".
+          </div>
+
+          <div id="act2-list"></div>
+
+          <div class="activity-controls">
+            <button class="btn-primary" onclick="checkActivity2()">✓ Semak Jawapan · ตรวจคำตอบ</button>
+            <button class="btn-ghost" onclick="resetActivity2()">↺ Cuba Lagi · ลองใหม่</button>
+            <span class="score-pill" id="act2-score">0 / 3</span>
+          </div>
+        </div>
+        <div class="motif-band bottom"></div>
+      </section>
+
+    </div>
+
+    <div class="controls">
+      <button class="nav-btn" id="prevBtn" onclick="prevPage()">‹</button>
+      <div class="dots" id="dots"></div>
+      <button class="nav-btn" id="nextBtn" onclick="nextPage()">›</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- Pagination ---------------- */
+const pages = document.querySelectorAll('.page');
+const dotsWrap = document.getElementById('dots');
+let current = 0;
+
+pages.forEach((_, i) => {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 0 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotsWrap.appendChild(d);
+});
+const dotEls = dotsWrap.querySelectorAll('.dot');
+
+function render(){
+  pages.forEach((p,i) => p.classList.toggle('active', i === current));
+  dotEls.forEach((d,i) => d.classList.toggle('active', i === current));
+  document.getElementById('pageTag').textContent = (current+1) + ' / ' + pages.length;
+  document.getElementById('prevBtn').disabled = current === 0;
+  document.getElementById('nextBtn').disabled = current === pages.length - 1;
+  document.getElementById('book').scrollTop = 0;
+}
+function goTo(i){ current = Math.max(0, Math.min(pages.length-1, i)); render(); }
+function nextPage(){ goTo(current+1); }
+function prevPage(){ goTo(current-1); }
+document.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight') nextPage();
+  if(e.key === 'ArrowLeft') prevPage();
+});
+render();
+
+/* ---------------- Activity 1: Pengelasan Kata ---------------- */
+const act1Data = [
+  { my:'Ali', th:'', answer:'khas' },
+  { my:'kereta', th:'(รถยนต์)', answer:'am' },
+  { my:'Rumah Sakit Yala', th:'(โรงพยาบาลยะลา)', answer:'khas' },
+  { my:'sekolah', th:'(โรงเรียน)', answer:'am' },
+  { my:'kejayaan', th:'(ความสำเร็จ)', answer:'am' },
+  { my:'saya', th:'(ฉัน)', answer:'ganti' }
+];
+const catLabel = { khas:'Khas', am:'Am', ganti:'Ganti Nama' };
+const act1Bank = document.getElementById('act1-bank');
+
+function buildActivity1(){
+  act1Bank.innerHTML = '';
+  act1Data.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'word-card';
+    card.id = 'act1-card-' + idx;
+    card.innerHTML = `
+      <span class="word">${item.my} <span style="font-weight:400;color:#7a8580;font-size:.78rem;">${item.th}</span></span>
+      <div class="opt-row">
+        <button class="opt-btn" data-cat="khas" onclick="selectCat(${idx},'khas')">Khas</button>
+        <button class="opt-btn" data-cat="am" onclick="selectCat(${idx},'am')">Am</button>
+        <button class="opt-btn" data-cat="ganti" onclick="selectCat(${idx},'ganti')">Ganti Nama</button>
+      </div>
+      <div class="fb"></div>
+    `;
+    act1Bank.appendChild(card);
+  });
+}
+const act1Selection = {};
+function selectCat(idx, cat){
+  act1Selection[idx] = cat;
+  const card = document.getElementById('act1-card-' + idx);
+  card.querySelectorAll('.opt-btn').forEach(b => b.classList.toggle('selected', b.dataset.cat === cat));
+}
+function checkActivity1(){
+  let score = 0;
+  act1Data.forEach((item, idx) => {
+    const card = document.getElementById('act1-card-' + idx);
+    const fb = card.querySelector('.fb');
+    const chosen = act1Selection[idx];
+    card.classList.remove('correct','incorrect');
+    if(!chosen){
+      fb.textContent = 'ยังไม่ได้เลือก · Belum dipilih';
+      card.classList.add('incorrect');
+      return;
+    }
+    if(chosen === item.answer){
+      score++;
+      card.classList.add('correct');
+      fb.textContent = '✓ ถูกต้อง · Betul';
+    } else {
+      card.classList.add('incorrect');
+      fb.textContent = '✗ ที่ถูกคือ ' + catLabel[item.answer] + ' · Jawapan betul: Kata Nama ' + catLabel[item.answer];
+    }
+  });
+  document.getElementById('act1-score').textContent = score + ' / ' + act1Data.length;
+}
+function resetActivity1(){
+  Object.keys(act1Selection).forEach(k => delete act1Selection[k]);
+  buildActivity1();
+  document.getElementById('act1-score').textContent = '0 / ' + act1Data.length;
+}
+buildActivity1();
+
+/* ---------------- Activity 2: Isikan Tempat Kosong ---------------- */
+const act2Data = [
+  {
+    my: '(____) sedang bermain bola sepak di padang.',
+    th: 'พวกเขากำลังเล่นฟุตบอลที่สนาม',
+    answer: 'mereka'
+  },
+  {
+    my: 'Pengetua sekolah baru tiba. (____) akan memberi ucapan.',
+    th: 'ผู้อำนวยการโรงเรียนเพิ่งมาถึง ท่านกำลังจะกล่าวให้โอวาท',
+    answer: 'beliau'
+  },
+  {
+    my: 'Nama (____) ialah Ahmad.',
+    th: 'ฉันชื่ออามัด',
+    answer: 'saya'
+  }
+];
+const optWords = ['saya','mereka','beliau'];
+const act2List = document.getElementById('act2-list');
+
+function buildActivity2(){
+  act2List.innerHTML = '';
+  act2Data.forEach((item, idx) => {
+    const card = document.createElement('div');
+    card.className = 'sentence-card';
+    card.id = 'act2-card-' + idx;
+    card.innerHTML = `
+      <div class="sentence-my">${idx+1}. ${item.my}</div>
+      <div class="sentence-th">${item.th}</div>
+      <div class="opt-row">
+        ${optWords.map(w => `<button class="opt-btn" data-w="${w}" onclick="selectWord(${idx},'${w}')">${w}</button>`).join('')}
+      </div>
+      <div class="fb"></div>
+    `;
+    act2List.appendChild(card);
+  });
+}
+const act2Selection = {};
+function selectWord(idx, w){
+  act2Selection[idx] = w;
+  const card = document.getElementById('act2-card-' + idx);
+  card.querySelectorAll('.opt-btn').forEach(b => b.classList.toggle('selected', b.dataset.w === w));
+}
+function checkActivity2(){
+  let score = 0;
+  act2Data.forEach((item, idx) => {
+    const card = document.getElementById('act2-card-' + idx);
+    const fb = card.querySelector('.fb');
+    const chosen = act2Selection[idx];
+    card.classList.remove('correct','incorrect');
+    if(!chosen){
+      fb.textContent = 'ยังไม่ได้เลือก · Belum dipilih';
+      card.classList.add('incorrect');
+      return;
+    }
+    if(chosen === item.answer){
+      score++;
+      card.classList.add('correct');
+      fb.textContent = '✓ ถูกต้อง · Betul';
+    } else {
+      card.classList.add('incorrect');
+      fb.textContent = '✗ ที่ถูกคือ "' + item.answer + '" · Jawapan betul: "' + item.answer + '"';
+    }
+  });
+  document.getElementById('act2-score').textContent = score + ' / ' + act2Data.length;
+}
+function resetActivity2(){
+  Object.keys(act2Selection).forEach(k => delete act2Selection[k]);
+  buildActivity2();
+  document.getElementById('act2-score').textContent = '0 / ' + act2Data.length;
+}
+buildActivity2();
+</script>
+</body>
+</html>
